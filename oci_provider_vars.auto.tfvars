@@ -1,6 +1,6 @@
 tenancy_ocid        = "ocid1.tenancy.oc1..aaaaaaaakgb7zirmoynybz74r4ibh6rr5yhomkmph2ajom3i6j2qoheudqsq"
 user_ocid           = "ocid1.user.oc1..aaaaaaaa33mw7fuld6z4aymiswxrcvxrvsgp7mlj4xp4s6dx66kwiqu5kdpq"
-private_key_path    = "C:\\Users\\hp\\.oci\\sessions\\start-terraform\\oci_api_key.pem"
-fingerprint         = "03:ad:cc:58:f6:cb:1f:12:59:c9:e3:d8:69:18:af:e2"
+private_key_path    = "C:\\Users\\hp\\.oci\\sessions\\terraform-oci\\oci_api_key.pem"
+fingerprint         = "c5:75:06:66:a0:33:85:cc:a4:98:1f:59:e7:73:5d:a5"
 region              = "ap-tokyo-1"
 root_compartment_id = "ocid1.tenancy.oc1..aaaaaaaakgb7zirmoynybz74r4ibh6rr5yhomkmph2ajom3i6j2qoheudqsq"
