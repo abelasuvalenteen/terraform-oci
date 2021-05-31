@@ -12,11 +12,11 @@ pipeline {
     options { skipDefaultCheckout() }
 
     stages {
-        stage('Session Authenticate') {
+        stage('OCI Session Refresh') {
             steps {
                script {
                    echo "OCI session Authenticate"
-                   bat "oci session authenticate"
+                   bat "oci session refresh --profile terraform-oci"
                }
             }
         }
