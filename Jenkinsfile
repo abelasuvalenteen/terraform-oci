@@ -21,6 +21,21 @@ pipeline {
             }
         }
 
+        stage('Pull Source Code') {
+            steps {
+               script {
+                   // Clean Workspace before start
+                   cleanWs()
+
+                   // Get code from GitHub repository
+                   git(
+                    url: 'https://github.com/abelasuvalenteen/terraform-oci.git',
+                    branch: 'master'
+                    )
+               }
+            }
+        }
+
         stage('Init') {
             steps {
                script {
