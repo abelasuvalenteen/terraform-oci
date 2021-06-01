@@ -1,0 +1,19 @@
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
+*.hcl
+*.backup
+
+# provider file for testing - should be manually added
+provider.tf
+
+.idea
+
+
+

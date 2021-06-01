@@ -1,0 +1,6 @@
+bastion_vcn_name = "bastion vcn"
+bastion_vcn_dns_label ="bastionvcn"
+bastion_vcn_subnet_name = "bastion vcn subnet"
+bastion_vcn_subnet_dns_label = "bastionvcnsn"
+compartment_ocid="ocid1.compartment.oc1..aaaaaaaarjrqu5e52t6j33qpitaiecgh4732sy2ndp4ghwrxymbgnred2eeq"
+ssh_public_key_path = "C:\\Users\\hp\\.oci\\oci-ssh-key.pub"

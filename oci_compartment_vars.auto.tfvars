@@ -1,5 +1,0 @@
-bastion_compartment_name = "bastion"
-bastion_compartment_desc = "Bastion Compartment"
-app_compartment_name = "application"
-app_compartment_desc = "Application Compartment"
-region = "ap-tokyo-1"
