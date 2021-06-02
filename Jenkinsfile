@@ -36,55 +36,74 @@ pipeline {
             }
         }
 
-        stage('Init') {
+        stage('Application') {
             steps {
                script {
                  if("${params.buildType}".equalsIgnoreCase("build")) {
-                   echo "Terraform Init"
-                   bat "terraform init"
+                   echo "Building : Compartment & VCN"
+                   bat """
+                       cd ${WORKSPACE}\\application\\compartment
+                       terraform init
+                       terraform plan
+                       terraform apply -auto-approve
+                   """
+                   echo "Building : Compute and Load Balancer"
+                   bat """
+                       cd ${WORKSPACE}\\application\\compute
+                       terraform init
+                       terraform plan
+                       terraform apply -auto-approve
+                   """
                   } else {
-                   echo "Skipping init"
+                   echo "Running Destroy"
+                   bat """
+                      cd ${WORKSPACE}\\application\\compartment
+                      terraform destroy -auto-approve
+                   """
+                  bat """
+                      cd ${WORKSPACE}\\application\\compute
+                      terraform destroy -auto-approve
+                  """
                   }
                }
             }
         }
 
-        stage('Validate & Plan') {
+        stage('Bastion') {
             steps {
                script {
                   if("${params.buildType}".equalsIgnoreCase("build")) {
-                   echo "Terraform Validate"
-                   bat "terraform validate"
-                   echo "Terraform Plan"
-                   bat "terraform plan"
-                  } else {
-                   echo "Skipping plan"
-                  }
-               }
-            }
-        }
-
-        stage('Apply') {
-            steps {
-               script {
-                  if("${params.buildType}".equalsIgnoreCase("build")) {
-                   echo "Terraform Apply"
-                   bat "terraform apply -auto-approve"
-                  } else {
-                   echo "Skipping apply"
-                  }
-               }
-            }
-        }
-
-        stage('Destroy') {
-            steps {
-               script {
-                  if("${params.buildType}".equalsIgnoreCase("destroy")) {
-                   echo "Terraform Destroy"
-                   bat "terraform destroy"
-                  } else {
-                   echo "Skipping destroy"
+                     echo "Building : Compartment"
+                     bat """
+                         cd ${WORKSPACE}\\bastion\\compartment
+                         terraform init
+                         terraform plan
+                         terraform apply -auto-approve
+                     """
+                     echo "Building : VCN"
+                     bat """
+                         cd ${WORKSPACE}\\bastion\\vcn
+                         terraform init
+                         terraform plan
+                         terraform apply -auto-approve
+                     """
+                      echo "Building : Computeinstance"
+                      bat """
+                          cd ${WORKSPACE}\\bastion\\computeinstance
+                          terraform init
+                          terraform plan
+                          terraform apply -auto-approve
+                      """
+                    } else {
+                     echo "Running Destroy"
+                     bat """
+                        cd ${WORKSPACE}\\bastion\\compartment
+                        terraform destroy -auto-approve
+                        cd ${WORKSPACE}\\bastion\\vcn
+                        terraform destroy -auto-approve
+                        cd ${WORKSPACE}\\bastion\\computeinstance
+                        terraform destroy -auto-approve
+                    """
                   }
                }
             }

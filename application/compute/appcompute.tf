@@ -10,11 +10,7 @@ variable "instance_image_ocid" {
 
   default = {
     # See https://docs.us-phoenix-1.oraclecloud.com/images/
-    # Oracle-provided image "Oracle-Linux-7.7-2019.10.19-0"
-    us-phoenix-1   = "ocid1.image.oc1.phx.aaaaaaaaalftcwenhqptcsibib433ecl7453fvnkgh45cfwyvtrq3reocjha"
-    us-ashburn-1   = "ocid1.image.oc1.iad.aaaaaaaapbttbwn5jla6wrnsrugwcdvrjy2rb45jd6txptunprwh4qob7uaa"
-    eu-frankfurt-1 = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaatg3vbdctkxzvtzsrqhlkugep4rtmqohypphypbjjt34hib6i2jaa"
-    uk-london-1    = "ocid1.image.oc1.uk-london-1.aaaaaaaasg3gy5z5xm3kn72d5rf6s7dlp6qyfdn2c6dmbhzjbrcr3s45ecua"
+    # Oracle-provided image "Oracle Linux 7.9"
     ap-tokyo-1     = "ocid1.image.oc1.ap-tokyo-1.aaaaaaaapj6tt3elckgdsgvambg7unr3vzv7ngsb7qw7yybuyb3utymhgz2a"
   }
 }
@@ -104,7 +100,7 @@ resource "oci_core_security_list" "appsecuritylist" {
 
   egress_security_rules {
     protocol    = "all"
-    destination = "10.0.0.0/24"
+    destination = "0.0.0.0/0"
   }
 
     ingress_security_rules {
@@ -134,33 +130,9 @@ resource "oci_load_balancer" "lb1" {
   }
 }
 
-resource "oci_load_balancer" "lb2" {
-  shape          = "100Mbps"
-  compartment_id = var.compartment_ocid
-
-  subnet_ids = [
-      oci_core_subnet.application_subnet1.id,
-    ]
-
-  display_name = "loadbalancer2"
-}
-
 resource "oci_load_balancer_backend_set" "lb-bes1" {
   name             = "lb-bes1"
   load_balancer_id = oci_load_balancer.lb1.id
-  policy           = "ROUND_ROBIN"
-
-  health_checker {
-    port                = "80"
-    protocol            = "HTTP"
-    response_body_regex = ".*"
-    url_path            = "/"
-  }
-}
-
-resource "oci_load_balancer_backend_set" "lb-bes2" {
-  name             = "lb-bes2"
-  load_balancer_id = oci_load_balancer.lb2.id
   policy           = "ROUND_ROBIN"
 
   health_checker {
@@ -216,34 +188,10 @@ resource "oci_load_balancer_listener" "lb-listener1" {
   }
 }
 
-resource "oci_load_balancer_listener" "lb-listener2" {
-  load_balancer_id         = oci_load_balancer.lb2.id
-  name                     = "tcp"
-  default_backend_set_name = oci_load_balancer_backend_set.lb-bes2.name
-  port                     = 80
-  protocol                 = "TCP"
-
-  connection_configuration {
-    idle_timeout_in_seconds            = "2"
-    backend_tcp_proxy_protocol_version = "1"
-  }
-}
-
 resource "oci_load_balancer_backend" "lb-be1" {
   load_balancer_id = oci_load_balancer.lb1.id
   backendset_name  = oci_load_balancer_backend_set.lb-bes1.name
-  ip_address       = oci_core_instance.app-instance1.private_ip
-  port             = 80
-  backup           = false
-  drain            = false
-  offline          = false
-  weight           = 1
-}
-
-resource "oci_load_balancer_backend" "lb-be2" {
-  load_balancer_id = oci_load_balancer.lb2.id
-  backendset_name  = oci_load_balancer_backend_set.lb-bes2.name
-  ip_address       = oci_core_instance.app-instance2.private_ip
+  ip_address       = oci_core_instance.app_instance1.private_ip
   port             = 80
   backup           = false
   drain            = false
@@ -301,10 +249,10 @@ output "lb_public_ip" {
 
 /* Instance */
 
-resource "oci_core_instance" "app-instance1" {
+resource "oci_core_instance" "app_instance1" {
   availability_domain = data.oci_identity_availability_domain.ad1.name
   compartment_id      = var.compartment_ocid
-  display_name        = "app-instance1"
+  display_name        = "app_instance1"
   shape               = var.instance_shape
 
   metadata = {
@@ -314,34 +262,31 @@ resource "oci_core_instance" "app-instance1" {
   create_vnic_details {
     subnet_id      = oci_core_subnet.application_subnet1.id
     hostname_label = "app-instance1"
+    assign_public_ip = true
   }
 
   source_details {
     source_type = "image"
     source_id   = var.instance_image_ocid[var.region]
   }
+
+    timeouts {
+      create = "60m"
+    }
 }
 
-resource "oci_core_instance" "app-instance2" {
-  availability_domain = data.oci_identity_availability_domain.ad1.name
+# Gets a list of vNIC attachments on the instance
+data "oci_core_vnic_attachments" "instance_vnics" {
   compartment_id      = var.compartment_ocid
-  display_name        = "app-instance2"
-  shape               = var.instance_shape
-
-  metadata = {
-    user_data = base64encode(var.user-data)
-  }
-
-  create_vnic_details {
-    subnet_id      = oci_core_subnet.application_subnet1.id
-    hostname_label = "app-instance2"
-  }
-
-  source_details {
-    source_type = "image"
-    source_id   = var.instance_image_ocid[var.region]
-  }
+  availability_domain = data.oci_identity_availability_domain.ad1.name
+  instance_id         = oci_core_instance.app_instance1.id
 }
+
+# Gets the OCID of the first (default) vNIC
+data "oci_core_vnic" "instance_vnic" {
+  vnic_id = data.oci_core_vnic_attachments.instance_vnics.vnic_attachments[0]["vnic_id"]
+}
+
 
 variable "user-data" {
   default = <<EOF

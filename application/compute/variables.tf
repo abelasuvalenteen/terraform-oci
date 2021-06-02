@@ -32,3 +32,10 @@ variable "compartment_ocid" {
   description = "compartment id where to create all resources"
   type        = string
 }
+
+variable "ssh_public_key" {
+  description = "ssh public key"
+  type        = string
+}
+
+
