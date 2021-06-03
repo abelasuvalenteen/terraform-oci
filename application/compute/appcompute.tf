@@ -112,6 +112,16 @@ resource "oci_core_security_list" "appsecuritylist" {
         max = 80
       }
     }
+
+    ingress_security_rules {
+      protocol = "6"
+      source   = "0.0.0.0/0"
+
+      tcp_options {
+        min = 22
+        max = 22
+      }
+    }
 }
 
 /* Load Balancer */
@@ -256,6 +266,7 @@ resource "oci_core_instance" "app_instance1" {
   shape               = var.instance_shape
 
   metadata = {
+    ssh_authorized_keys = file(var.ssh_authorized_keys)
     user_data = base64encode(var.user-data)
   }
 

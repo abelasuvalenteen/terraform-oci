@@ -38,5 +38,9 @@ variable "ssh_public_key" {
   type        = string
 }
 
+variable "ssh_authorized_keys" {
+  description = "ssh public key"
+  type        = string
+}
 
 
