@@ -26,7 +26,7 @@ Template covers below setup
                 > terraform apply
     3. Navigate to bastion folder
        > Navigate to each folder under the bastion and perform below actions
-         1. "compartment" ; 2. "vcn"; 3. "computeinstance"
+         1. "compartment" ; 2. "vcn";
                 > Define the provider.tf and tfvars
                 > terraform init
                 > terraform plan
