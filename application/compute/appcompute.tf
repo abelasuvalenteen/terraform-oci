@@ -136,7 +136,7 @@ resource "oci_load_balancer_backend_set" "lb-bes1" {
   policy           = "ROUND_ROBIN"
 
   health_checker {
-    port                = "80"
+    port                = "8080"
     protocol            = "HTTP"
     response_body_regex = ".*"
     url_path            = "/"
@@ -192,7 +192,7 @@ resource "oci_load_balancer_backend" "lb-be1" {
   load_balancer_id = oci_load_balancer.lb1.id
   backendset_name  = oci_load_balancer_backend_set.lb-bes1.name
   ip_address       = oci_core_instance.app_instance1.private_ip
-  port             = 80
+  port             = 8080
   backup           = false
   drain            = false
   offline          = false
