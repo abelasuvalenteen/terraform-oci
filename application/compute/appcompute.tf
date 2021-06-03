@@ -262,7 +262,7 @@ resource "oci_core_instance" "app_instance1" {
   create_vnic_details {
     subnet_id      = oci_core_subnet.application_subnet1.id
     hostname_label = "app-instance1"
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   source_details {
