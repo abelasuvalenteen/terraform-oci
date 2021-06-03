@@ -5,24 +5,6 @@ variable "bastion_vcn_subnet_name" { type = string }
 variable "bastion_vcn_subnet_dns_label" { type = string }
 variable "compartment_ocid" { type = string }
 variable "ssh_public_key_path" { type = string }
-variable "availability_domain" {
-  default = 1
-}
-
-variable "instance_image_ocid" {
-  type = map(string)
-
-  default = {
-    # See https://docs.us-phoenix-1.oraclecloud.com/images/
-    # Oracle-provided image "Oracle Linux 7.9"
-    ap-tokyo-1     = "ocid1.image.oc1.ap-tokyo-1.aaaaaaaapj6tt3elckgdsgvambg7unr3vzv7ngsb7qw7yybuyb3utymhgz2a"
-  }
-}
-
-data "oci_identity_availability_domain" "ad1" {
-  compartment_id = var.tenancy_ocid
-  ad_number      = 1
-}
 
 resource "oci_core_virtual_network" "bastion_vcn" {
   cidr_block     = "172.168.0.0/16"
@@ -85,86 +67,10 @@ resource "oci_core_security_list" "bastion_security_list" {
     source   = "0.0.0.0/0"
 
     tcp_options {
-      max = "3000"
-      min = "3000"
-    }
-  }
-
-  ingress_security_rules {
-    protocol = "6"
-    source   = "0.0.0.0/0"
-
-    tcp_options {
-      max = "3005"
-      min = "3005"
-    }
-  }
-
-  ingress_security_rules {
-    protocol = "6"
-    source   = "0.0.0.0/0"
-
-    tcp_options {
       max = "80"
       min = "80"
     }
   }
-}
-
-
-# Bastion compute
-
-resource "oci_core_instance" "bastion" {
-  availability_domain = data.oci_identity_availability_domain.ad1.name
-  compartment_id      = var.compartment_ocid
-
-  create_vnic_details {
-    assign_public_ip = "public"
-    display_name     = "bastion-vnic"
-    hostname_label   = "bastion"
-    subnet_id        = oci_core_subnet.bastion_subnet.id
-  }
-
-  display_name ="bastion"
-
-  launch_options {
-    boot_volume_type = "PARAVIRTUALIZED"
-    network_type     = "PARAVIRTUALIZED"
-  }
-
-  # prevent the bastion from destroying and recreating itself if the image ocid changes
-  lifecycle {
-    ignore_changes = [source_details[0].source_id]
-  }
-
-  metadata = {
-    ssh_authorized_keys = file(var.ssh_public_key_path)
-  }
-
-  shape = "VM.Standard.E4.Flex"
-
-  source_details {
-    boot_volume_size_in_gbs = "50"
-    source_type             = "image"
-    source_id               = local.bastion_image_id
-  }
-
-  state = "RUNNING"
-
-  timeouts {
-    create = "60m"
-  }
-
-  count = 0
-}
-
-locals {
-  all_protocols    = "all"
-  anywhere         = "0.0.0.0/0"
-  ssh_port         = 22
-  tcp_protocol     = 6
-  bastion_image_id = var.instance_image_ocid[var.region]
-  vcn_cidr         = oci_core_virtual_network.bastion_vcn.id
 }
 
 # Outputs for the vcn module
